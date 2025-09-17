@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: load-generator
+  namespace: ns1
 spec:
   replicas: 1
   selector:
@@ -15,7 +16,7 @@ spec:
       containers:
         - name: load-generator
           # IMPORTANT: Replace this with the path to your pushed image
-          image: image-registry.openshift-image-registry.svc:5000/your-project/load-generator:latest
+          image: quay.io/redhat-telco-adoption/monitoring-load-generator
           env:
             # The internal OpenShift service URL for your app
             - name: TARGET_URL
