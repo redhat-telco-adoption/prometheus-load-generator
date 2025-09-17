@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: load-generator
+  template:
+    metadata:
+      labels:
+        app: load-generator
+    spec:
+      containers:
+        - name: load-generator
+          # IMPORTANT: Replace this with the path to your pushed image
+          image: image-registry.openshift-image-registry.svc:5000/your-project/load-generator:latest
+          env:
+            # The internal OpenShift service URL for your app
+            - name: TARGET_URL
+              value: "http://prometheus-example-app:8080"
+            # Desired requests per second
+            - name: "RPS"
+              value: "5"
+            # 20% of requests will go to the /err endpoint
+            - name: "ERROR_RATIO"
+              value: "0.2"

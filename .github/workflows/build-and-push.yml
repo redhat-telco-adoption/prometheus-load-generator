@@ -1,0 +1,66 @@
+name: Build and Push load-generator image to Quay.io
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*', 'release-*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Change this to your Quay.io repository (e.g., quay.io/<org>/<repo>)
+  # You can override this at dispatch time as well
+  QUAY_IMAGE: ${{ vars.QUAY_IMAGE != '' && vars.QUAY_IMAGE || format('quay.io/{0}/{1}', github.repository_owner, 'load-generator') }}
+  # Path to the Containerfile
+  DOCKERFILE: Containerfile
+  CONTEXT: .
+
+jobs:
+  build-and-push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Quay.io
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Extract Docker metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.QUAY_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,format=short
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.CONTEXT }}
+          file: ${{ env.DOCKERFILE }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Platforms can be expanded to multi-arch if needed
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          echo "Built and pushed image(s):"
+          echo "${{ steps.meta.outputs.tags }}" | tr ' ' '\n' | sed 's/^/- /'
+          echo "\nTarget repository: ${{ env.QUAY_IMAGE }}"
