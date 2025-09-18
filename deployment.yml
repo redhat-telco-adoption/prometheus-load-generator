@@ -23,7 +23,9 @@ spec:
               value: "http://prometheus-example-app:8080"
             # Desired requests per second
             - name: "RPS"
-              value: "5"
-            # 20% of requests will go to the /err endpoint
-            - name: "ERROR_RATIO"
-              value: "0.2"
+              value: "250"
+            # Error ratio range (0.0 - 1.0) to simulate
+            - name: "MIN_ERROR_RATIO"
+              value: "0.1"
+            - name: "MAX_ERROR_RATIO"
+              value: "0.5"
