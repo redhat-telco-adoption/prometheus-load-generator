@@ -14,18 +14,19 @@ spec:
         app: load-generator
     spec:
       containers:
-        - name: load-generator
-          # IMPORTANT: Replace this with the path to your pushed image
-          image: quay.io/redhat-telco-adoption/monitoring-load-generator
-          env:
-            # The internal OpenShift service URL for your app
-            - name: TARGET_URL
-              value: "http://prometheus-example-app:8080"
-            # Desired requests per second
-            - name: "RPS"
-              value: "250"
-            # Error ratio range (0.0 - 1.0) to simulate
-            - name: "MIN_ERROR_RATIO"
-              value: "0.1"
-            - name: "MAX_ERROR_RATIO"
-              value: "0.5"
+      - name: load-generator
+        # IMPORTANT: Replace this with the path to your pushed image
+        image: quay.io/redhat-telco-adoption/monitoring-load-generator
+        imagePullPolicy: Always
+        env:
+        # The internal OpenShift service URL for your app
+        - name: TARGET_URL
+          value: "http://prometheus-example-app:8080"
+        # Desired requests per second
+        - name: "RPS"
+          value: "250"
+        # Error ratio range (0.0 - 1.0) to simulate
+        - name: "MIN_ERROR_RATIO"
+          value: "0.1"
+        - name: "MAX_ERROR_RATIO"
+          value: "0.5"
